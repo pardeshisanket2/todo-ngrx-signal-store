@@ -1,0 +1,47 @@
+<div class="todo-container">
+    <h1>Todo List with Signals</h1>
+
+    <form class="add-todo" [formGroup]="todoForm">
+        <input type="text" formControlName="todoMessageInput" (keyup.enter)="addTodo()"
+            placeholder="What needs to be done?" class="todo-input" />
+        <button (click)="addTodo()" class="btn btn-add">Add Todo</button>
+    </form>
+
+    <div class="stats">
+        <p>
+            Total: {{ totalTodos() }} | Active: {{ activeTodos() }} | Completed:
+            {{ completedTodos() }}
+        </p>
+    </div>
+
+    <div class="filter-buttons">
+        <button (click)="setFilter('all')" [class.active]="currentFilter() === 'all'" class="btn btn-filter">
+            All
+        </button>
+        <button (click)="setFilter('active')" [class.active]="currentFilter() === 'active'" class="btn btn-filter">
+            Active
+        </button>
+        <button (click)="setFilter('completed')" [class.active]="currentFilter() === 'completed'"
+            class="btn btn-filter">
+            Completed
+        </button>
+    </div>
+
+    <ul class="todo-list">
+        <li *ngFor="let todo of allTodos" [ngClass]="!todo.isDeleted ? 'todo-item' : ''"
+            [class.completed]="todo.completed">
+            <ng-container *ngIf="!todo.isDeleted">
+                <input type="checkbox" [checked]="todo.completed" (change)="toggleTodo(todo.id)"
+                    class="todo-checkbox" />
+                <span class="todo-text">{{ todo.message }}</span>
+                <button (click)="deleteTodo(todo.id)" class="btn btn-delete">
+                    Delete
+                </button>
+            </ng-container>
+        </li>
+    </ul>
+
+    <div *ngIf="filteredTodos().length === 0" class="empty-state">
+        <p>{{ getEmptyMessage() }}</p>
+    </div>
+</div>

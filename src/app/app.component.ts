@@ -1,13 +1,27 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { TodoStore } from './store/todos.store';
+import { TodosListComponent } from './todos-list/todos-list.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
+  imports: [TodosListComponent, MatProgressSpinnerModule],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrl: './app.component.scss',
 })
 export class AppComponent {
   title = 'todo-ngrx-signal-store';
+
+  store = inject(TodoStore);
+
+  ngOnInit() {
+    this.loadTodos().then(() => {
+      console.log('Todos loaded');
+    });
+  }
+
+  async loadTodos() {
+    await this.store.loadAllTodos();
+  }
 }
