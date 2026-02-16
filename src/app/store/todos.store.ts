@@ -43,7 +43,6 @@ export const TodoStore = signalStore(
       };
 
       const todos = store.todos(); // Access the current todos from the store
-      console.log('Current todos in store before adding:', todos);
 
       patchState(store, { todos: [...todos, newTodo], loading: false });
     },

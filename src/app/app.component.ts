@@ -16,9 +16,7 @@ export class AppComponent {
   store = inject(TodoStore);
 
   ngOnInit() {
-    this.loadTodos().then(() => {
-      console.log('Todos loaded');
-    });
+    this.loadTodos().then(() => {});
   }
 
   async loadTodos() {
