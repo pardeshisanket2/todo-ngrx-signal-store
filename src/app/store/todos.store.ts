@@ -3,7 +3,7 @@ import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 import { Todo } from '../model/todo.interface';
 import { TodoService } from '../services/todos.service';
 
-export type TodoFilter = 'ALL' | 'COMPLETED' | 'PENDING';
+export type TodoFilter = 'ALL' | 'COMPLETED' | 'ACTIVE';
 
 type TodosState = {
   todos: Todo[];
@@ -26,12 +26,26 @@ export const TodoStore = signalStore(
     async loadAllTodos() {
       patchState(store, { loading: true });
 
-      const todosSignal = await todoService.getTodos();
-      const todos = todosSignal(); // Extract the value from the signal
+      try {
+        const response = await todoService.getAllTodos({
+          todoFilter: store.filter(),
+        });
+        const todos = response.data.todos;
+        console.log('Store updateFilter:', store.filter());
 
-      patchState(store, { todos, loading: false });
+        patchState(store, { todos, filter: store.filter(), loading: false });
+      } catch (error) {
+        patchState(store, { loading: false });
+      }
     },
 
+    updateFilter(filter: TodoFilter) {
+      patchState(store, { filter });
+      console.log('Store updateFilter:', filter);
+      this.loadAllTodos(); // Reload todos based on the new filter
+    },
+
+    // TODO: Add Backend API calls for these methods and handle loading state accordingly with error handling as well
     async addTodo(message: string) {
       patchState(store, { loading: true });
 
@@ -39,7 +53,6 @@ export const TodoStore = signalStore(
         id: Date.now(),
         message,
         completed: false,
-        isDeleted: false,
       };
 
       const todos = store.todos(); // Access the current todos from the store

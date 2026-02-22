@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -19,36 +19,28 @@ import { TodoStore } from '../store/todos.store';
 export class TodosListComponent {
   store = inject(TodoStore);
 
-  currentFilter = signal<'all' | 'active' | 'completed'>('all');
-
   todoForm!: FormGroup;
 
   allTodos: Todo[] = this.store.todos(); // Access the todos signal from the store;
 
-  totalTodos = computed(
-    () => this.store.todos().filter((todo) => !todo.isDeleted).length,
-  );
+  totalTodos = computed(() => this.store.todos().length);
 
   activeTodos = computed(
-    () =>
-      this.store.todos().filter((todo) => !todo.isDeleted && !todo.completed)
-        .length,
+    () => this.store.todos().filter((todo) => !todo.completed).length,
   );
 
   completedTodos = computed(
-    () =>
-      this.store.todos().filter((todo) => !todo.isDeleted && todo.completed)
-        .length,
+    () => this.store.todos().filter((todo) => todo.completed).length,
   );
 
   filteredTodos = computed(() => {
-    const filter = this.currentFilter();
-    const allTodos = this.store.todos().filter((todo) => !todo.isDeleted);
+    const filter = this.store.filter();
+    const allTodos = this.store.todos();
 
     switch (filter) {
-      case 'active':
+      case 'ACTIVE':
         return allTodos.filter((todo) => !todo.completed);
-      case 'completed':
+      case 'COMPLETED':
         return allTodos.filter((todo) => todo.completed);
       default:
         return allTodos;
@@ -61,28 +53,28 @@ export class TodosListComponent {
     this.todoForm = new FormGroup({
       todoMessageInput: new FormControl(),
     });
-    this.updateTodoList();
   }
 
   get todoMessageInput(): FormControl | null {
     return this.todoForm.get('todoMessageInput') as FormControl;
   }
 
-  updateTodoList() {
-    switch (this.currentFilter()) {
-      case 'active':
-        this.allTodos = this.store
-          .todos()
-          .filter((todo) => !todo.isDeleted && !todo.completed);
+  updateTodoList(filter?: 'ALL' | 'ACTIVE' | 'COMPLETED') {
+    // If no filter is provided, use the current filter from the store
+    if (!filter) {
+      filter = this.store.filter();
+    }
+
+    switch (filter) {
+      case 'ACTIVE':
+        this.store.updateFilter('ACTIVE');
         break;
-      case 'completed':
-        this.allTodos = this.store
-          .todos()
-          .filter((todo) => !todo.isDeleted && todo.completed);
+      case 'COMPLETED':
+        this.store.updateFilter('COMPLETED');
         break;
 
       default:
-        this.allTodos = this.store.todos();
+        this.store.updateFilter('ALL');
         break;
     }
   }
@@ -109,20 +101,15 @@ export class TodosListComponent {
     this.updateTodoList();
   }
 
-  setFilter(filter: 'all' | 'active' | 'completed') {
-    this.currentFilter.set(filter);
-    this.updateTodoList();
-  }
-
   getEmptyMessage(): string {
-    const filter = this.currentFilter();
+    const filter = this.store.filter();
     if (this.totalTodos() === 0) {
       return 'No todos yet. Add one to get started!';
     }
-    if (filter === 'active') {
+    if (filter === 'ACTIVE') {
       return 'No active todos. Great job!';
     }
-    if (filter === 'completed') {
+    if (filter === 'COMPLETED') {
       return 'No completed todos yet.';
     }
     return 'No todos to display.';

@@ -1,17 +1,21 @@
-import { Injectable } from '@angular/core';
-import { TODOS } from '../model/mock-data';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
+import { environment } from '../../environments/environment.production';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TodoService {
-  async getTodos() {
-    // Simulate network delay
-    await sleep(1000);
-    return TODOS;
-  }
-}
+  private http = inject(HttpClient);
 
-async function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  async getAllTodos({ todoFilter = 'ALL' }) {
+    const params = new HttpParams().append('todoFilter', todoFilter);
+
+    return firstValueFrom(
+      this.http.get<any>(`${environment.hostAPI}/todo`, {
+        params,
+      }),
+    );
+  }
 }
