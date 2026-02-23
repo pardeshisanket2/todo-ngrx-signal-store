@@ -28,12 +28,12 @@
     </div>
 
     <ul class="todo-list">
-        <li *ngFor="let todo of filteredTodos()" class="todo-item" [class.completed]="todo.completed">
+        <li *ngFor="let todo of allTodos" class="todo-item" [class.completed]="todo.isCompleted">
             <ng-container>
-                <input type="checkbox" [checked]="todo.completed" (change)="toggleTodo(todo.id)"
+                <input type="checkbox" [checked]="todo.isCompleted" (change)="toggleTodo(todo._id)"
                     class="todo-checkbox" />
                 <span class="todo-text">{{ todo.message }}</span>
-                <button (click)="deleteTodo(todo.id)" class="btn btn-delete">
+                <button (click)="deleteTodo(todo._id)" class="btn btn-delete">
                     Delete
                 </button>
             </ng-container>

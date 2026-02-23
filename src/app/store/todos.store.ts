@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
-import { Todo } from '../model/todo.interface';
+import { CreateTodoDto, Todo } from '../interfaces/todo.interface';
 import { TodoService } from '../services/todos.service';
 
 export type TodoFilter = 'ALL' | 'COMPLETED' | 'ACTIVE';
@@ -31,7 +31,6 @@ export const TodoStore = signalStore(
           todoFilter: store.filter(),
         });
         const todos = response.data.todos;
-        console.log('Store updateFilter:', store.filter());
 
         patchState(store, { todos, filter: store.filter(), loading: false });
       } catch (error) {
@@ -41,45 +40,51 @@ export const TodoStore = signalStore(
 
     updateFilter(filter: TodoFilter) {
       patchState(store, { filter });
-      console.log('Store updateFilter:', filter);
       this.loadAllTodos(); // Reload todos based on the new filter
     },
 
-    // TODO: Add Backend API calls for these methods and handle loading state accordingly with error handling as well
     async addTodo(message: string) {
       patchState(store, { loading: true });
 
-      const newTodo: Todo = {
-        id: Date.now(),
-        message,
-        completed: false,
-      };
+      try {
+        const todo: CreateTodoDto = {
+          message,
+        };
+        await todoService.addTodo({ todo });
 
-      const todos = store.todos(); // Access the current todos from the store
-
-      patchState(store, { todos: [...todos, newTodo], loading: false });
+        // Reload the todos after adding a new one
+        await this.loadAllTodos();
+      } catch (error) {
+        patchState(store, { loading: false });
+        throw error;
+      }
     },
 
-    async toggleTodo(id: number) {
+    async toggleTodo(id: string) {
       patchState(store, { loading: true });
+      try {
+        await todoService.toggleTodo({ id });
 
-      const todos = store.todos(); // Access the current todos from the store
-
-      const updatedTodos = todos.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo,
-      );
-      patchState(store, { todos: updatedTodos, loading: false });
+        // Reload the todos after toggling
+        await this.loadAllTodos();
+      } catch (error) {
+        patchState(store, { loading: false });
+        throw error;
+      }
     },
 
-    async deleteTodo(id: number) {
+    async deleteTodo(id: string) {
       patchState(store, { loading: true });
 
-      const todos = store.todos(); // Access the current todos from the store
+      try {
+        await todoService.deleteTodo({ id });
 
-      const updatedTodos = todos.map((todo) =>
-        todo.id === id ? { ...todo, isDeleted: true } : todo,
-      );
-      patchState(store, { todos: updatedTodos, loading: false });
+        // Reload the todos after deletion
+        await this.loadAllTodos();
+      } catch (error) {
+        patchState(store, { loading: false });
+        throw error;
+      }
     },
   })),
 );

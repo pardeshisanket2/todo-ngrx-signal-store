@@ -6,7 +6,7 @@ import {
   FormsModule,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { Todo } from '../model/todo.interface';
+import { Todo } from '../interfaces/todo.interface';
 import { TodoStore } from '../store/todos.store';
 
 @Component({
@@ -26,11 +26,11 @@ export class TodosListComponent {
   totalTodos = computed(() => this.store.todos().length);
 
   activeTodos = computed(
-    () => this.store.todos().filter((todo) => !todo.completed).length,
+    () => this.store.todos().filter((todo) => !todo.isCompleted).length,
   );
 
   completedTodos = computed(
-    () => this.store.todos().filter((todo) => todo.completed).length,
+    () => this.store.todos().filter((todo) => todo.isCompleted).length,
   );
 
   filteredTodos = computed(() => {
@@ -39,9 +39,9 @@ export class TodosListComponent {
 
     switch (filter) {
       case 'ACTIVE':
-        return allTodos.filter((todo) => !todo.completed);
+        return allTodos.filter((todo) => !todo.isCompleted);
       case 'COMPLETED':
-        return allTodos.filter((todo) => todo.completed);
+        return allTodos.filter((todo) => todo.isCompleted);
       default:
         return allTodos;
     }
@@ -91,14 +91,12 @@ export class TodosListComponent {
     }
   }
 
-  toggleTodo(id: number) {
+  toggleTodo(id: string) {
     this.store.toggleTodo(id);
-    this.updateTodoList();
   }
 
-  deleteTodo(id: number) {
+  deleteTodo(id: string) {
     this.store.deleteTodo(id);
-    this.updateTodoList();
   }
 
   getEmptyMessage(): string {
