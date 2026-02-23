@@ -15,26 +15,25 @@
     </div>
 
     <div class="filter-buttons">
-        <button (click)="setFilter('all')" [class.active]="currentFilter() === 'all'" class="btn btn-filter">
+        <button (click)="updateTodoList('ALL')" [class.active]="store.filter() === 'ALL'" class="btn btn-filter">
             All
         </button>
-        <button (click)="setFilter('active')" [class.active]="currentFilter() === 'active'" class="btn btn-filter">
+        <button (click)="updateTodoList('ACTIVE')" [class.active]="store.filter() === 'ACTIVE'" class="btn btn-filter">
             Active
         </button>
-        <button (click)="setFilter('completed')" [class.active]="currentFilter() === 'completed'"
+        <button (click)="updateTodoList('COMPLETED')" [class.active]="store.filter() === 'COMPLETED'"
             class="btn btn-filter">
             Completed
         </button>
     </div>
 
     <ul class="todo-list">
-        <li *ngFor="let todo of allTodos" [ngClass]="!todo.isDeleted ? 'todo-item' : ''"
-            [class.completed]="todo.completed">
-            <ng-container *ngIf="!todo.isDeleted">
-                <input type="checkbox" [checked]="todo.completed" (change)="toggleTodo(todo.id)"
+        <li *ngFor="let todo of allTodos" class="todo-item" [class.completed]="todo.isCompleted">
+            <ng-container>
+                <input type="checkbox" [checked]="todo.isCompleted" (change)="toggleTodo(todo._id)"
                     class="todo-checkbox" />
                 <span class="todo-text">{{ todo.message }}</span>
-                <button (click)="deleteTodo(todo.id)" class="btn btn-delete">
+                <button (click)="deleteTodo(todo._id)" class="btn btn-delete">
                     Delete
                 </button>
             </ng-container>
